@@ -1,0 +1,10 @@
+build/
+output/
+.DS_Store
+__pycache__/
+# personal study notes, not part of the submission
+report/notes.md
+# not used by the report (Q5 uses the Q1 bandwidth)
+scripts/bandwidth.c
+# LaTeX build output; the submitted copy is ./report.pdf
+report/report.pdf

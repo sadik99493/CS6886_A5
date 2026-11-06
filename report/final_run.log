@@ -1,0 +1,116 @@
+$ make clean
+rm -rf build output
+
+$ make naive loops tiled fused best omp
+/opt/homebrew/opt/llvm/bin/clang -O3 -march=native -o build/naive src/attn_naive.c -lm
+naive              N=1024  d=64   threads=1   time_ms=   105.077  GFLOP/s=    2.55
+naive              N=2048  d=64   threads=1   time_ms=   421.038  GFLOP/s=    2.55
+naive              N=4096  d=128  threads=1   time_ms=  3653.342  GFLOP/s=    2.35
+naive              N=4096  d=64   threads=1   time_ms=  1720.201  GFLOP/s=    2.50
+/opt/homebrew/opt/llvm/bin/clang -O3 -march=native -o build/loops src/attn_loops.c -lm
+loops              N=1024  d=64   threads=1   time_ms=    14.581  GFLOP/s=   18.41
+loops              N=2048  d=64   threads=1   time_ms=    57.039  GFLOP/s=   18.82
+loops              N=4096  d=128  threads=1   time_ms=   375.977  GFLOP/s=   22.85
+loops              N=4096  d=64   threads=1   time_ms=   226.510  GFLOP/s=   18.96
+/opt/homebrew/opt/llvm/bin/clang -O3 -march=native -o build/tiled src/attn_tiled.c -lm
+tiled              N=1024  d=64   threads=1   time_ms=     6.093  GFLOP/s=   44.06
+tiled              N=2048  d=64   threads=1   time_ms=    20.071  GFLOP/s=   53.50
+tiled              N=4096  d=128  threads=1   time_ms=   130.422  GFLOP/s=   65.86
+tiled              N=4096  d=64   threads=1   time_ms=    84.841  GFLOP/s=   50.62
+/opt/homebrew/opt/llvm/bin/clang -O3 -march=native -o build/fused src/attn_fused.c -lm
+fused              N=1024  d=64   threads=1   time_ms=     4.855  GFLOP/s=   55.29
+fused              N=2048  d=64   threads=1   time_ms=    19.320  GFLOP/s=   55.58
+fused              N=4096  d=128  threads=1   time_ms=   122.946  GFLOP/s=   69.87
+fused              N=4096  d=64   threads=1   time_ms=    77.204  GFLOP/s=   55.63
+/opt/homebrew/opt/llvm/bin/clang -O3 -march=native -o build/best src/attn_best.c -lm
+best               N=1024  d=64   threads=1   time_ms=     4.256  GFLOP/s=   63.07
+best               N=2048  d=64   threads=1   time_ms=    14.011  GFLOP/s=   76.64
+best               N=4096  d=128  threads=1   time_ms=   100.225  GFLOP/s=   85.71
+best               N=4096  d=64   threads=1   time_ms=    55.701  GFLOP/s=   77.11
+/opt/homebrew/opt/llvm/bin/clang -O3 -march=native -fopenmp -o build/omp src/attn_omp.c -lm
+omp                N=1024  d=64   threads=8   time_ms=     1.317  GFLOP/s=  203.82
+omp                N=2048  d=64   threads=8   time_ms=     3.961  GFLOP/s=  271.08
+omp                N=4096  d=128  threads=8   time_ms=    21.919  GFLOP/s=  391.89
+omp                N=4096  d=64   threads=8   time_ms=    11.825  GFLOP/s=  363.21
+
+$ make check
+qkv_N1024_d64.bin    loops        PASS  (error 1.1e-06)
+qkv_N1024_d64.bin    tiled        PASS  (error 1.1e-06)
+qkv_N1024_d64.bin    fused        PASS  (error 1.1e-06)
+qkv_N1024_d64.bin    best         PASS  (error 2.1e-06)
+qkv_N1024_d64.bin    omp          PASS  (error 2.1e-06)
+qkv_N2048_d64.bin    loops        PASS  (error 8.4e-07)
+qkv_N2048_d64.bin    tiled        PASS  (error 8.4e-07)
+qkv_N2048_d64.bin    fused        PASS  (error 8.4e-07)
+qkv_N2048_d64.bin    best         PASS  (error 3.1e-06)
+qkv_N2048_d64.bin    omp          PASS  (error 3.1e-06)
+qkv_N4096_d128.bin   loops        PASS  (error 1.7e-06)
+qkv_N4096_d128.bin   tiled        PASS  (error 1.1e-06)
+qkv_N4096_d128.bin   fused        PASS  (error 1.1e-06)
+qkv_N4096_d128.bin   best         PASS  (error 4.7e-06)
+qkv_N4096_d128.bin   omp          PASS  (error 4.7e-06)
+qkv_N4096_d64.bin    loops        PASS  (error 1.2e-06)
+qkv_N4096_d64.bin    tiled        PASS  (error 1.2e-06)
+qkv_N4096_d64.bin    fused        PASS  (error 1.2e-06)
+qkv_N4096_d64.bin    best         PASS  (error 4.7e-06)
+qkv_N4096_d64.bin    omp          PASS  (error 4.7e-06)
+
+$ ./build/omp input/qkv_N1024_d64.bin output/omp_sweep_t1_qkv_N1024_d64.bin
+omp                N=1024  d=64   threads=1   time_ms=     3.536  GFLOP/s=   75.92
+
+$ ./build/omp input/qkv_N1024_d64.bin output/omp_sweep_t2_qkv_N1024_d64.bin
+omp                N=1024  d=64   threads=2   time_ms=     2.188  GFLOP/s=  122.69
+
+$ ./build/omp input/qkv_N1024_d64.bin output/omp_sweep_t4_qkv_N1024_d64.bin
+omp                N=1024  d=64   threads=4   time_ms=     1.043  GFLOP/s=  257.37
+
+$ ./build/omp input/qkv_N1024_d64.bin output/omp_sweep_t6_qkv_N1024_d64.bin
+omp                N=1024  d=64   threads=6   time_ms=     0.890  GFLOP/s=  301.61
+
+$ ./build/omp input/qkv_N1024_d64.bin output/omp_sweep_t8_qkv_N1024_d64.bin
+omp                N=1024  d=64   threads=8   time_ms=     0.889  GFLOP/s=  301.95
+
+$ ./build/omp input/qkv_N2048_d64.bin output/omp_sweep_t1_qkv_N2048_d64.bin
+omp                N=2048  d=64   threads=1   time_ms=    14.011  GFLOP/s=   76.64
+
+$ ./build/omp input/qkv_N2048_d64.bin output/omp_sweep_t2_qkv_N2048_d64.bin
+omp                N=2048  d=64   threads=2   time_ms=     8.314  GFLOP/s=  129.15
+
+$ ./build/omp input/qkv_N2048_d64.bin output/omp_sweep_t4_qkv_N2048_d64.bin
+omp                N=2048  d=64   threads=4   time_ms=     4.219  GFLOP/s=  254.50
+
+$ ./build/omp input/qkv_N2048_d64.bin output/omp_sweep_t6_qkv_N2048_d64.bin
+omp                N=2048  d=64   threads=6   time_ms=     3.361  GFLOP/s=  319.47
+
+$ ./build/omp input/qkv_N2048_d64.bin output/omp_sweep_t8_qkv_N2048_d64.bin
+omp                N=2048  d=64   threads=8   time_ms=     3.010  GFLOP/s=  356.72
+
+$ ./build/omp input/qkv_N4096_d128.bin output/omp_sweep_t1_qkv_N4096_d128.bin
+omp                N=4096  d=128  threads=1   time_ms=    99.862  GFLOP/s=   86.02
+
+$ ./build/omp input/qkv_N4096_d128.bin output/omp_sweep_t2_qkv_N4096_d128.bin
+omp                N=4096  d=128  threads=2   time_ms=    51.897  GFLOP/s=  165.52
+
+$ ./build/omp input/qkv_N4096_d128.bin output/omp_sweep_t4_qkv_N4096_d128.bin
+omp                N=4096  d=128  threads=4   time_ms=    28.433  GFLOP/s=  302.11
+
+$ ./build/omp input/qkv_N4096_d128.bin output/omp_sweep_t6_qkv_N4096_d128.bin
+omp                N=4096  d=128  threads=6   time_ms=    24.348  GFLOP/s=  352.80
+
+$ ./build/omp input/qkv_N4096_d128.bin output/omp_sweep_t8_qkv_N4096_d128.bin
+omp                N=4096  d=128  threads=8   time_ms=    22.054  GFLOP/s=  389.50
+
+$ ./build/omp input/qkv_N4096_d64.bin output/omp_sweep_t1_qkv_N4096_d64.bin
+omp                N=4096  d=64   threads=1   time_ms=    55.463  GFLOP/s=   77.44
+
+$ ./build/omp input/qkv_N4096_d64.bin output/omp_sweep_t2_qkv_N4096_d64.bin
+omp                N=4096  d=64   threads=2   time_ms=    29.372  GFLOP/s=  146.23
+
+$ ./build/omp input/qkv_N4096_d64.bin output/omp_sweep_t4_qkv_N4096_d64.bin
+omp                N=4096  d=64   threads=4   time_ms=    15.912  GFLOP/s=  269.92
+
+$ ./build/omp input/qkv_N4096_d64.bin output/omp_sweep_t6_qkv_N4096_d64.bin
+omp                N=4096  d=64   threads=6   time_ms=    13.494  GFLOP/s=  318.29
+
+$ ./build/omp input/qkv_N4096_d64.bin output/omp_sweep_t8_qkv_N4096_d64.bin
+omp                N=4096  d=64   threads=8   time_ms=    11.951  GFLOP/s=  359.38

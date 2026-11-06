@@ -1,0 +1,28 @@
+# Machine specification (Q1). Fill in every field; give units. Fill in N/A if not applicable.
+
+CPU model                       : Apple M1 (MacBook Air, 2020)
+Microarchitecture               : ARMv8.5-A; Firestorm (P-cores) + Icestorm (E-cores)
+Physical cores                  : 8
+Logical cores (hardware threads): 8 (no SMT)
+Performance / efficiency cores  : 4 P + 4 E
+Base clock (GHz)                : N/A (Apple does not publish one; DVFS range is P 0.60-3.204, E 0.60-2.064)
+Max single-core clock (GHz)     : 3.204 (P-core), 2.064 (E-core)
+All-core clock under load (GHz) : P 2.55, E 2.064 with 8 threads busy; P 2.84 with 4 threads; P 3.14 with 1 thread (powermetrics)
+SIMD instruction set and width  : ARM NEON (AdvSIMD), 128-bit = 4 x FP32
+FMA units per core              : 4 x 128-bit FMA (P-core), 2 x 128-bit FMA (E-core)
+Vector registers per core       : 32 x 128-bit (v0-v31)
+L1 data cache (per core)        : 128 KB (P-core), 64 KB (E-core)
+L2 cache (size, shared by)      : 12 MB shared by 4 P-cores; 4 MB shared by 4 E-cores
+L3 cache (size, shared by)      : No CPU L3; 8 MB system level cache (SLC) shared by CPU, GPU and other SoC blocks
+Cache line size (bytes)         : 128
+RAM size (GB)                   : 8
+RAM type, speed (MT/s), channels: LPDDR4X, 4266 MT/s, 128-bit bus (8 x 16-bit channels)
+Operating system                : macOS 15.1.1 (24B91)
+Compiler and version            : Homebrew clang 23.1.5 (-O3 -march=native)
+
+# Derived (show the calculation in report.pdf)
+Peak FP32 GFLOP/s, one core     : 102.5 (P-core)
+Peak FP32 GFLOP/s, all cores    : 542.2 (4 P + 4 E)
+Memory bandwidth (GB/s)         : 68.3 (theoretical)
+Ridge point, one core (FLOP/B)  : 1.50
+Ridge point, all cores (FLOP/B) : 7.94
